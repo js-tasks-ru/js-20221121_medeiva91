@@ -48,7 +48,7 @@ export default class SortableTable {
           start: this.loadedRows,
           end: this.loadedRows + this.size
       });
-      const [a, b, c] = newData;
+
       if (!newData || !newData.length) {
           this.showEmptyPlaceholder();
           return;
