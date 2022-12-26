@@ -1,3 +1,5 @@
+//  взято из решебника случайно попало сюда. не знаю, как правильно удалить, чтобы тестыне сломались
+
 export default class DoubleSlider {
     element;
     subElements = {};
