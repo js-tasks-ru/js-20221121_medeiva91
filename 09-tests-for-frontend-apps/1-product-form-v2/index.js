@@ -7,96 +7,96 @@ const IMGUR_CLIENT_ID = '28aaa2e823b03b1';
 const BACKEND_URL = 'https://course-js.javascript.ru';
 
 export default class ProductForm {
-  constructor(productId) {
-    this.productId = productId;
-    this.defaultData = {
-      title: '',
-      description: '',
-      subcategory: '',
-      price: 0,
-      quantity: 0,
-      discount: 0,
-      status: 0,
-      images: []
-    };
+    constructor(productId) {
+        this.productId = productId;
+        this.defaultData = {
+            title: '',
+            description: '',
+            subcategory: '',
+            price: 0,
+            quantity: 0,
+            discount: 0,
+            status: 0,
+            images: []
+        };
 
-    this.subElements = {};
-    this.productsUrl = new URL('api/rest/products', BACKEND_URL);
-    this.categoriesUrl = new URL('api/rest/categories', BACKEND_URL);
-  }
-
-  async loadCategories() {
-    const url = new URL(this.categoriesUrl.toString());
-    url.searchParams.set('_sort', 'weight');
-    url.searchParams.set('_refs', 'subcategory');
-    return await fetchJson(url);
-  }
-
-  async loadProduct(id) {
-    const url = new URL(this.productsUrl.toString());
-    url.searchParams.set('id', id);
-    return await fetchJson(url);
-  }
-
-  onSubmit = (event) => {
-    event.preventDefault();
-    this.save();
-  }
-
-  async save() {
-    const [method, eventType] = this.productId ? ['PATCH', 'product-updated'] : ['PUT', 'product-saved'];
-
-    const response = await fetchJson(this.productsUrl, {
-      method: method,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(this.getProductData())
-    });
-
-    this.element.dispatchEvent(new CustomEvent(eventType, {
-      detail: {
-        response: response
-      }
-    }));
-  }
-
-  initEventListeners() {
-    this.subElements.productForm.elements.uploadImage.addEventListener('click', this.uploadImage);
-    this.subElements.productForm.addEventListener('submit', this.onSubmit);
-  }
-
-  async render() {
-    const div = document.createElement('div');
-    div.innerHTML = this.getProductForm;
-    this.element = div.firstElementChild;
-    this.subElements = this.getSubElements(this.element);
-
-    const promises = [
-      this.loadCategories(),
-      this.productId ? this.loadProduct(this.productId) : Promise.resolve([this.defaultData])
-    ];
-
-    try {
-      const [categories, products] = await Promise.all(promises);
-      const [product] = products;
-
-      this.setProductData(product);
-
-      this.subElements.productForm.elements.subcategory.innerHTML = this.getCategories(categories);
-      this.subElements.imageListContainer.append(this.getSortableList(product.images));
-
-    } catch (error) {
-      console.error(error.message);
+        this.subElements = {};
+        this.productsUrl = new URL('api/rest/products', BACKEND_URL);
+        this.categoriesUrl = new URL('api/rest/categories', BACKEND_URL);
     }
 
-    this.initEventListeners();
+    async loadCategories() {
+        const url = new URL(this.categoriesUrl.toString());
+        url.searchParams.set('_sort', 'weight');
+        url.searchParams.set('_refs', 'subcategory');
+        return await fetchJson(url);
+    }
 
-    return this.element;
-  }
+    async loadProduct(id) {
+        const url = new URL(this.productsUrl.toString());
+        url.searchParams.set('id', id);
+        return await fetchJson(url);
+    }
 
-  getProductForm() {
-    return `
+    onSubmit = (event) => {
+        event.preventDefault();
+        this.save();
+    }
+
+    async save() {
+        const [method, eventType] = this.productId ? ['PATCH', 'product-updated'] : ['PUT', 'product-saved'];
+
+        const response = await fetchJson(this.productsUrl, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(this.getProductData())
+        });
+
+        this.element.dispatchEvent(new CustomEvent(eventType, {
+            detail: {
+                response: response
+            }
+        }));
+    }
+
+    initEventListeners() {
+        this.subElements.productForm.elements.uploadImage.addEventListener('click', this.uploadImage);
+        this.subElements.productForm.addEventListener('submit', this.onSubmit);
+    }
+
+    async render() {
+        const div = document.createElement('div');
+        div.innerHTML = this.getProductForm;
+        this.element = div.firstElementChild;
+        this.subElements = this.getSubElements(this.element);
+
+        const promises = [
+            this.loadCategories(),
+            this.productId ? this.loadProduct(this.productId) : Promise.resolve([this.defaultData])
+        ];
+
+        try {
+            const [categories, products] = await Promise.all(promises);
+            const [product] = products;
+
+            this.setProductData(product);
+
+            this.subElements.productForm.elements.subcategory.innerHTML = this.getCategories(categories);
+            this.subElements.imageListContainer.append(this.getSortableList(product.images));
+
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        this.initEventListeners();
+
+        return this.element;
+    }
+
+    getProductForm() {
+        return `
         <div class="product-form">
             <form data-element="productForm" class="form-grid">
                 <div class="form-group form-group__half_left">
@@ -147,43 +147,43 @@ export default class ProductForm {
             </form>
         </div>
     `;
-  }
+    }
 
-  getCategories(data) {
-    const categories = [];
+    getCategories(data) {
+        const categories = [];
 
-    data.forEach(category => {
-      category.subcategories.forEach(subCategory => {
-        categories.push({
-          id: subCategory.id,
-          text: category.title + ' > ' + subCategory.title
+        data.forEach(category => {
+            category.subcategories.forEach(subCategory => {
+                categories.push({
+                    id: subCategory.id,
+                    text: category.title + ' > ' + subCategory.title
+                });
+            });
         });
-      });
-    });
 
-    return categories.map(({id, text}) => {
-      return `
+        return categories.map(({ id, text }) => {
+            return `
         <option value="${id}">${escapeHtml(text)}</option>
       `;
-    }).join('');
-  }
+        }).join('');
+    }
 
-  getProductImages(data) {
-    return data.map(image => this.getProductImage(image));
-  }
+    getProductImages(data) {
+        return data.map(image => this.getProductImage(image));
+    }
 
-  getSortableList(data) {
-    const sortableList = new SortableList({
-      items: this.getProductImages(data)
-    });
-    return sortableList.element;
-  }
+    getSortableList(data) {
+        const sortableList = new SortableList({
+            items: this.getProductImages(data)
+        });
+        return sortableList.element;
+    }
 
-  getProductImage({url, source}) {
-    const li = document.createElement('li');
+    getProductImage({ url, source }) {
+        const li = document.createElement('li');
 
-    li.classList.add('products-edit__imagelist-item');
-    li.innerHTML = `
+        li.classList.add('products-edit__imagelist-item');
+        li.innerHTML = `
         <input type="hidden" name="url" value="${url}">
         <input type="hidden" name="source" value="${source}">
         <span data-grab-handle="">
@@ -194,112 +194,112 @@ export default class ProductForm {
             <img src="icon-trash.svg"alt="delete">
         </button>
     `;
-    return li;
-  }
-
-  getSubElements(parent) {
-    const result = {};
-
-    for (const subElement of parent.querySelectorAll('[data-element]')) {
-      result[subElement.dataset.element] = subElement;
-    }
-    return result;
-  }
-
-  uploadImage = () => {
-    let fileInput = document.getElementById('imageUpload');
-
-    if (!fileInput) {
-      fileInput = document.createElement('input');
-      fileInput.id = 'imageUpload';
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.hidden = true;
-      fileInput.addEventListener('change', this.onChange);
-      document.body.append(fileInput);
+        return li;
     }
 
-    fileInput.click();
-  }
+    getSubElements(parent) {
+        const result = {};
 
-  onChange = (event) => {
-    const [file] = event.target.files;
-
-    if (!file) {
-      return;
+        for (const subElement of parent.querySelectorAll('[data-element]')) {
+            result[subElement.dataset.element] = subElement;
+        }
+        return result;
     }
 
-    const uploadImage = this.subElements.productForm.elements.uploadImage;
+    uploadImage = () => {
+        let fileInput = document.getElementById('imageUpload');
 
-    uploadImage.classList.add('is-loading');
-    uploadImage.disabled = true;
+        if (!fileInput) {
+            fileInput = document.createElement('input');
+            fileInput.id = 'imageUpload';
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.hidden = true;
+            fileInput.addEventListener('change', this.onChange);
+            document.body.append(fileInput);
+        }
 
-    const formData = new FormData();
-    formData.append('image', file);
-
-    fetchJson('https://api.imgur.com/3/image', {
-      method: 'POST',
-      headers: {
-        Authorization: `Client-ID ${IMGUR_CLIENT_ID}`
-      },
-      body: formData,
-      referrer: ''
-    })
-      .then(response => {
-        this.imageList.push({url: response.data.link, source: file.name});
-        this.subElements.imageListContainer.append(this.getSortableList(this.imageList));
-      })
-      .catch(error => console.error(error.message))
-      .finally(() => {
-        uploadImage.classList.remove("is-loading");
-        uploadImage.disabled = false;
-      });
-  }
-
-  getProductData() {
-    const elements = this.subElements.productForm.elements;
-
-    const product = {
-      title: elements.title.value,
-      description: elements.description.value,
-      subcategory: elements.subcategory.value,
-      price: Number(elements.price.value),
-      quantity: Number(elements.quantity.value),
-      discount: Number(elements.discount.value),
-      status: Number(elements.status.value),
-      images: this.imageList
-    };
-
-    if (this.productId) {
-      product.id = this.productId;
+        fileInput.click();
     }
 
-    return product;
-  }
+    onChange = (event) => {
+        const [file] = event.target.files;
 
-  setProductData(product) {
-    const elements = this.subElements.productForm.elements;
+        if (!file) {
+            return;
+        }
 
-    elements.title.value = product.title;
-    elements.description.value = product.description;
-    elements.subcategory.value = product.subcategory;
-    elements.price.value = product.price;
-    elements.quantity.value = product.quantity;
-    elements.discount.value = product.discount;
-    elements.status.value = product.status;
+        const uploadImage = this.subElements.productForm.elements.uploadImage;
 
-    this.imageList = product.images;
-  }
+        uploadImage.classList.add('is-loading');
+        uploadImage.disabled = true;
 
-  remove() {
-    if (this.element) {
-      this.element.remove();
+        const formData = new FormData();
+        formData.append('image', file);
+
+        fetchJson('https://api.imgur.com/3/image', {
+            method: 'POST',
+            headers: {
+                Authorization: `Client-ID ${IMGUR_CLIENT_ID}`
+            },
+            body: formData,
+            referrer: ''
+        })
+            .then(response => {
+                this.imageList.push({ url: response.data.link, source: file.name });
+                this.subElements.imageListContainer.append(this.getSortableList(this.imageList));
+            })
+            .catch(error => console.error(error.message))
+            .finally(() => {
+                uploadImage.classList.remove("is-loading");
+                uploadImage.disabled = false;
+            });
     }
-  }
 
-  destroy() {
-    this.remove();
-    this.element = null;
-    this.subElements = {};
-  }
+    getProductData() {
+        const elements = this.subElements.productForm.elements;
+
+        const product = {
+            title: elements.title.value,
+            description: elements.description.value,
+            subcategory: elements.subcategory.value,
+            price: Number(elements.price.value),
+            quantity: Number(elements.quantity.value),
+            discount: Number(elements.discount.value),
+            status: Number(elements.status.value),
+            images: this.imageList
+        };
+
+        if (this.productId) {
+            product.id = this.productId;
+        }
+
+        return product;
+    }
+
+    setProductData(product) {
+        const elements = this.subElements.productForm.elements;
+
+        elements.title.value = product.title;
+        elements.description.value = product.description;
+        elements.subcategory.value = product.subcategory;
+        elements.price.value = product.price;
+        elements.quantity.value = product.quantity;
+        elements.discount.value = product.discount;
+        elements.status.value = product.status;
+
+        this.imageList = product.images;
+    }
+
+    remove() {
+        if (this.element) {
+            this.element.remove();
+        }
+    }
+
+    destroy() {
+        this.remove();
+        this.element = null;
+        this.subElements = {};
+    }
 }

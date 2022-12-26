@@ -53,13 +53,12 @@ export default class ColumnChart {
             return bodyElements.join("");
         }
         return "";
-
-        
-
     }
 
     remove() {
-        this.element.remove();
+        if (this.element) {
+            this.element.remove();
+        }
     }
 
     destroy() {
